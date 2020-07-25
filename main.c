@@ -20,9 +20,8 @@
 #endif
 
 #include "buckle.h"
-
 #define SRC_INVALID INT_MAX
-#define DEFAULT_MUTE_KEYCODE 0x46 /* Scroll Lock */
+#define DEFAULT_MUTE_KEYCODE 0x77 /* Scroll Lock */
 
 #define TEST_ERROR(_msg)		\
 	error = alGetError();		\
@@ -293,9 +292,11 @@ static void handle_mute_key(int mute_key)
 			if(count == 2) {
 				muted = !muted;
 				printd("Mute %s", muted ? "enabled" : "disabled");
-				execvp(xset led 3);
-				return 0;
 				count = 0;
+				int systemRet = system(muted ? "xset -led 3" : "xset led 3");
+				if(systemRet == -1){
+				  // The system method failed
+				}
 			}
 		} else {
 			count = 1;
