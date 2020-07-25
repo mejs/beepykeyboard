@@ -293,6 +293,8 @@ static void handle_mute_key(int mute_key)
 			if(count == 2) {
 				muted = !muted;
 				printd("Mute %s", muted ? "enabled" : "disabled");
+				execvp(xset led 3);
+				return 0;
 				count = 0;
 			}
 		} else {
