@@ -19,9 +19,11 @@ Diagram from [ps-2.kev009.com](http://ps-2.kev009.com/ohlandl/keyboard/Keyboard.
 
 The speaker is an 8 ohm, 0.2W, IBM part number 1392326
 
-Per [ps-2.kev009.com](http://ps-2.kev009.com/ohlandl/keyboard/Keyboard.html#RS6000_Style_Pinout_for_Keyboard), these speakers were added to Model M's meant for use with [IBM RS/6000 workstations](https://en.wikipedia.org/wiki/IBM_RISC_System/6000). I couldn't find a recording of how the speaker was used when connected to an RS/6000, but per a [few](https://deskthority.net/viewtopic.php?t=12153) [forum](https://geekhack.org/index.php?topic=16219.0) [posts](), these were meant to emulate terminal beeping sounds. Unfortunately none of the forum posters reported whether they were able to enable the speaker.
+Per [ps-2.kev009.com](http://ps-2.kev009.com/ohlandl/keyboard/Keyboard.html#RS6000_Style_Pinout_for_Keyboard), these speakers were added to Model Ms meant for use with [IBM RS/6000 workstations](https://en.wikipedia.org/wiki/IBM_RISC_System/6000). I couldn't find a recording of how the speaker was used when connected to an RS/6000, but per a [few](https://deskthority.net/viewtopic.php?t=12153) [forum](https://geekhack.org/index.php?topic=16219.0) [posts](), these were meant to emulate terminal beeping sounds. Unfortunately none of the forum posters reported whether they were able to enable the speaker.
 
 I wanted to enable the speaker, so I attempted to wire the spare pins 5 and 6 on the PS/2 side of the keyboard cable. Unfortunately, the pins 5 and 6 on the PS/2 side and pins F and A on the SDL side were not terminated on my cable, making this impossible. While I found some SDL connectors for sale, I don't have a crimping tool capable of terminating them, so I gave up on this idea.
+
+![SDL](/img/sdl2.jpg)
 
 Instead, I decided to wire the speaker directly, using a 3.5mm audio cable:
 
