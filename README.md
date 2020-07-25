@@ -1,37 +1,61 @@
-Nostalgia bucklespring keyboard sound
+Beepy keyboard sound
 =====================================
 
-Copyright 2016 Ico Doornekamp
+This project provides beeping sound when typing, intended for use with an IBM Model M keyboard with an integrated PC Speaker. 
 
-This project emulates the sound of my old faithful IBM Model-M space saver
-bucklespring keyboard while typing on my notebook, mainly for the purpose of
-annoying the hell out of my coworkers.
+Forked from [Bucklespring project](https://github.com/zevv/bucklespring) by [Ico Doornekamp](https://github.com/zevv/).
 
-![Model M](img/model-m.jpg)
-![Buckle](img/buckle.gif)
+Below are notes on the changes I've made, but the main functionality works pretty much the same way as in the original project. The project is adapted for specific use with my Model M on a laptop running Linux.
 
-Bucklespring runs as a background process and plays back the sound of each key
-pressed and released on your keyboard, just as if you were using an IBM
-Model-M. The sound of each key has carefully been sampled, and is played back
-while simulating the proper distance and direction for a realistic 3D sound
-palette of pure nostalgic bliss.
+![Model M](/img/model-m.jpg)
 
-To temporarily silence bucklespring, for example to enter secrets, press
-ScrollLock twice (but be aware that those ScrollLock events _are_ delivered to
-the application); same to unmute. The keycode for muting can be changed with
-the `-m` option. Use keycode 0 to disable the mute function.
+My IBM Model M keyboard came with an integrated PC speaker, wired to pins F and A on the SDL connector used by the Model M:
+
+![SDL diagram](/img/sdl.png)
+
+Diagram from [ps-2.kev009.com](http://ps-2.kev009.com/ohlandl/keyboard/Keyboard.html#RS6000_Style_Pinout_for_Keyboard)
+
+![IBM Model M speaker](/img/speaker.png)
+
+The speaker is an 8 ohm, 0.2W, IBM part number 1392326
+
+Per [ps-2.kev009.com](http://ps-2.kev009.com/ohlandl/keyboard/Keyboard.html#RS6000_Style_Pinout_for_Keyboard), these speakers were added to Model M's meant for use with [IBM RS/6000 workstations](https://en.wikipedia.org/wiki/IBM_RISC_System/6000). I couldn't find a recording of how the speaker was used when connected to an RS/6000, but per a [few](https://deskthority.net/viewtopic.php?t=12153) [forum](https://geekhack.org/index.php?topic=16219.0) [posts](), these were meant to emulate terminal beeping sounds. Unfortunately none of the forum posters reported whether they were able to enable the speaker.
+
+I wanted to enable the speaker, so I attempted to wire the spare pins 5 and 6 on the PS/2 side of the keyboard cable. Unfortunately, the pins 5 and 6 on the PS/2 side and pins F and A on the SDL side were not terminated on my cable, making this impossible. While I found some SDL connectors for sale, I don't have a crimping tool capable of terminating them, so I gave up on this idea.
+
+Instead, I decided to wire the speaker directly, using a 3.5mm audio cable:
+
+![IBM Model M speaker](/img/speaker2.png)
+
+![Audio cable](/img/audiocable.png)
+
+The speaker is connected to a line out on my Dell D6000 docking station. 
+
+Once I completed the hardware portion of this project, I started looking for a good typing sound emulation solution. The bucklespring program provided a lot more complexity, since [zevv](https://github.com/zevv) included precise buckling sounds for each key, but it was otherwise exactly what I was looking for, including additional functionality such as muting and unmuting.
+
+To make it produce beeping sounds instead of buckle springs, I recorded a 1khz beep using the speaker-test program:
+
+```
+$ ( speaker-test -t sine -f 1000 )& pid=$! ; sleep 0.1s ; kill -9 $pid
+```
+
+Since the original code replicate both pressing and releasing a key (just like a real bucklespring), I removed all the wav files ending in -0 (for release), and replaced all the wav files ending in -1 (for pressing the key). This should be done more ellegantly by changing the code, but for now it works with intended effect.
+
+Additional changes I've made:
+
+- defined the model M scroll lock key as 0x77 to use as mute key
+- added LED control for engaging the mute key to light up the scroll lock LED (by issuing "xset led 3" to the system)
+
+I run the program with the mute function (-M) and then double press the scroll lock to enable beeping (turning scroll lock LED on). When done with beeping, I double click the scroll lock (turning scroll lock LED off).
+
+Here's a [sample recording](https://vimeo.com/441630096), including unmuting and muting the program.
+
+
+
 
 Installation
 ------------
 
-### Debian
-
-Bucklespring is available in the latest Debian and Ubuntu dev-releases, so you can
-install with
-
-```
-$ sudo apt-get install bucklespring
-```
 
 ### Linux, building from source
 
@@ -68,47 +92,6 @@ require special permissions for buckle to open the devices, though. Build with
 $ make libinput=1
 ```
 
-#### Using snap on Ubuntu (since 16.04) and other distros
-
-```
-$ sudo snap install bucklespring
-$ bucklespring.buckle
-```
-
-The snap includes the OpenAL configuration tweaks mentioned in this README.
-See http://snapcraft.io/ for more info about Snap packages
-
-
-### MacOS
-
-I've heard rumours that bucklespring also runs on MacOS. I've been told that
-the following should do:
-
-```
-$ brew install alure pkg-config
-$ git clone https://github.com/zevv/bucklespring.git && cd bucklespring
-$ make
-$ sudo ./buckle
-```
-
-Note that you need superuser privileges to create the event tap on Mac OS X.
-Also give your terminal Accessibility rights: system preferences -> security -> privacy -> accessibility
-
-If you want to use buckle while doing normal work, add an & behind the command.
-```
-$ sudo ./buckle &
-```
-
-### Windows
-
-I think the windows build is currently broken, it seems that switching from
-Freelut to Alure broke windows, I might fix this one day.
-
-I suspect there is something wrong with `alureCreateBufferFromFile()` getting
-called from another thread in the key capture callback, but my knowledge of the
-win32 platform is so poor I'm not even able to run a debugger to see what is
-happening. Help from an expert is much appreciated.
-
 
 Usage
 -----
@@ -129,35 +112,3 @@ options:
   -s WIDTH  set stereo width [0..100]
   -v        increase verbosity / debugging
 ````
-
-OpenAL notes
-------------
-
-
-Bucklespring uses the OpenAL library for mixing samples and providing a
-realistic 3D audio playback. This section contains some tips and tricks for
-properly tuning OpenAL for bucklespring.
-
-* The default OpenAL settings can cause a slight delay in playback. Edit or create
-  the OpenAL configuration file `~/.alsoftrc` and add the following options:
-
- ````
- period_size = 32
- periods = 4
- ````
-
-* If you are using headphones, enabling the head-related-transfer functions in OpenAL
-  for a better 3D sound:
-
- ````
- hrtf = true
- ````
-
-* When starting an OpenAL application, the internal sound card is selected for output,
-  and you might not be able to change the device using pavucontrol. The option to select
-  an alternate device is present, but choosing the device has no effect. To solve this,
-  add the following option to the OpenAL configuration file:
-
- ````
- allow-moves = true
- ````
